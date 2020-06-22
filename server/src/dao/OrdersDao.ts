@@ -12,9 +12,9 @@ const dbutil = require("./dbutil");
  * @param Addressee 
  * @param success 
  */
-function addOrder(WID: number, CID: number, Quantity: number, Paid: boolean, Shipped: boolean = false, Address: string, Addressee: string, success: (res: Response) => void) {
-    let insertSql = `insert into Orders (WID, CID, Quantity, Paid, Shipped, Address, Addressee) values (?, ?, ?, ?, ?, ?, ?);`;
-    let params = [WID, CID, Quantity, Paid, Shipped, Address, Addressee];
+function addOrder(WID: number, CID: number, Quantity: number, Paid: boolean, Shipped: boolean = false, Address: string, Addressee: string, Phone:string, success: (res: Response) => void) {
+    let insertSql = `insert into Orders (WID, CID, Quantity, Paid, Shipped, Address, Addressee, Phone) values (?, ?, ?, ?, ?, ?, ?, ?);`;
+    let params = [WID, CID, Quantity, Paid, Shipped, Address, Addressee, Phone];
     let connection = dbutil.createConnection();
     connection.connect();
     connection.query(insertSql, params, (err: any, res: Response) => {
@@ -34,6 +34,20 @@ function addOrder(WID: number, CID: number, Quantity: number, Paid: boolean, Shi
 function queryOrdersByCID(CID: number, success: (res: Response) => void) {
     let querySql = `select Ware.*, O.* from Ware, (select * from Orders where CID = ?) as O where Ware.WID = O.WID;`;
     let params = [CID];
+    let connection = dbutil.createConnection();
+    connection.connect();
+    connection.query(querySql, params, (err: any, res: Response) => {
+        if (err == null) {
+            success(res);
+        } else {
+            console.log(err);
+        }
+    })
+    connection.end();
+}
+function queryOrders(success: (res: Response) => void) {
+    let querySql = `select Ware.*, O.* from Ware, (select * from Orders) as O where Ware.WID = O.WID;`;
+    let params = [];
     let connection = dbutil.createConnection();
     connection.connect();
     connection.query(querySql, params, (err: any, res: Response) => {
@@ -67,5 +81,6 @@ function updateShippedByOID(OID:number, success: (res: Response) => void) {
 module.exports = {
     addOrder,
     queryOrdersByCID,
+    queryOrders,
     updateShippedByOID
 }

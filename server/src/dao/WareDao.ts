@@ -12,8 +12,9 @@ const dbutil = require("./dbutil");
  * @param success 
  */
 function insertWare(WName: string, WClass: string, WDesc: null|string, WPrice: number , WPic: null|string, WDiscount: number, success:(res:Response)=>void){
-    let insertSql = `insert into Ware (WName, WClass, Wdesc, WPrice , Wpic, WDiscount) values (?, ?, ?, ?, ?, ?);`;
+    let insertSql = `insert into Ware (WName, WClass, Wdesc, WPrice , Wpic, WDiscount, OnShelves) values (?, ?, ?, ?, ?, ?, 1);`;
     let params = [WName, WClass, WDesc, WPrice, WPic, WDiscount];
+    console.log(params)
     let connection = dbutil.createConnection();
     connection.connect();
     connection.query(insertSql, params, (err: any, res: Response)=>{
@@ -34,7 +35,40 @@ function deleteWareById(id: number, success:(res:Response)=>void){
     let deleteSql = `delete from Ware where WID = ?;`;
     let connection = dbutil.createConnection();
     connection.connect();
-    connection.query(deleteSql, [id], (err: any, res: Response)=>{
+    connection.query(deleteSql, [Number(id)], (err: any, res: Response)=>{
+        if(err==null){
+            success(res);
+        }else{
+            console.log(err);
+        }
+    })
+    connection.end();
+}
+function updateWare(id: number,WName: string, WClass: string, WDesc: null|string, WPrice: number , WPic: null|string, WDiscount: number, success:(res:Response)=>void){
+    let updateSql = `update Ware set WName=?, WClass=?, Wdesc=?, WPrice =?, Wpic=?, WDiscount=? where WID=?;`;
+    let params = [WName, WClass, WDesc, WPrice, WPic, WDiscount, id];
+    // console.log(params)
+    let connection = dbutil.createConnection();
+    connection.connect();
+    connection.query(updateSql, params, (err: any, res: Response)=>{
+        if(err==null){
+            success(res);
+        }else{
+            console.log(err);
+        }
+    })
+    connection.end();
+}
+/**
+ * 通过id改变上架信息
+ * @param id 
+ * @param success 
+ */
+function updateOnShelves(onShelves: boolean, WID: number, success:(res:Response)=>void){
+    let updateSql = `update Ware set onShelves = ? where WID = ?;`;
+    let connection = dbutil.createConnection();
+    connection.connect();
+    connection.query(updateSql, [onShelves, WID], (err: any, res: Response)=>{
         if(err==null){
             success(res);
         }else{
@@ -100,5 +134,7 @@ module.exports = {
     insertWare,
     deleteWareById,
     queryWare,
-    queryWareByClass
+    queryWareByClass,
+    updateOnShelves,
+    updateWare
 }
